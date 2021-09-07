@@ -31,6 +31,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.android.eggtimernotifications.R
 import com.example.android.eggtimernotifications.databinding.FragmentEggTimerBinding
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingService
 
 class EggTimerFragment : Fragment() {
 
@@ -56,6 +57,13 @@ class EggTimerFragment : Fragment() {
             getString(R.string.egg_notification_channel_name)
         )
 
+        createChannel(
+            getString(R.string.breakfast_notification_channel_id),
+            getString(R.string.breakfast_notification_channel_name)
+        )
+
+        subscribeToTopic()
+
         return binding.root
     }
 
@@ -63,11 +71,11 @@ class EggTimerFragment : Fragment() {
         // TODO: Step 1.6 START create a channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
-                channelId,
-                channelName,
+                channelId, channelName,
                 // TODO: Step 2.4 change importance
                 NotificationManager.IMPORTANCE_HIGH
-            )// TODO: Step 2.6 disable badges for this channel
+            )
+
                 .apply {
                     setShowBadge(false)
                 }
@@ -81,9 +89,21 @@ class EggTimerFragment : Fragment() {
                 NotificationManager::class.java
             )
             notificationManager.createNotificationChannel(notificationChannel)
+            // TODO: Step 2.6 disable badges for this channel
 
         }
-        // TODO: Step 1.6 END create a channel
+
+    }
+    // TODO: Step 1.6 END create a channel
+
+    private fun subscribeToTopic() {
+        FirebaseMessaging.getInstance().subscribeToTopic(TOPIC).addOnCompleteListener { task ->
+            var msg = getString(R.string.message_subscribed)
+            if (!task.isSuccessful) {
+                msg = getString(R.string.message_subscribe_failed)
+            }
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        }
     }
 
     companion object {
